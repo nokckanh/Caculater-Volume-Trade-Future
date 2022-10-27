@@ -50,10 +50,32 @@ exit_price_lbl.grid(row=2, column=0, padx=5, sticky=tk.E)
 total_risk_lbl = tk.Label(parm_frame , text='Đòn bẩy:')
 total_risk_lbl.grid(row=3, column=0, padx=5, sticky=tk.E)
 
+#----------------- Funtion check validate -----------
+import re
+
+def validate(string):
+    regex = re.compile(r"(\+|\-)?[0-9,]*$")
+    result = regex.match(string)
+    #--- Expect condition
+    return (string == ""
+            or (string.count('+') <= 1
+                and string.count('-') <= 1
+                and string.count(',') <= 1
+                and result is not None
+                and result.group(0) != ""))
+    
+def on_validate(P):
+    return validate(P)    
+    
+#-------------------End -------------------
+
 
 # Entry boxes
-num_contracts_box = tk.Entry(parm_frame, textvariable=RuiRo, width=11)
-num_contracts_box.grid(row=0, column=1, pady=5, sticky=tk.E)
+ruiro_box = tk.Entry(parm_frame,textvariable=RuiRo, width=11, validate="key")
+vcmd = (ruiro_box.register(on_validate), '%P')
+ruiro_box.config(validatecommand=vcmd)
+ruiro_box.grid(row=0, column=1, pady=5, sticky=tk.E)
+
 
 entry_price_box = tk.Entry(parm_frame, textvariable=entry_price, width=11)
 entry_price_box.grid(row=1, column=1, pady=5, sticky=tk.E)
@@ -75,9 +97,9 @@ total_risk_box.grid(row=3, column=1, pady=5, sticky=tk.E)
 
 #------ Kiem tra LONG SHORT ------------
 def CheckLongShort(entry,stoploss):
-    strin = 'Bạn đang SHORT'
+    strin = "Bạn đang SHORT"
     if entry > stoploss:
-        strin = 'bạn đang LONG'
+        strin = "Bạn đang LONG"
         return strin
     else:
         return strin
@@ -100,24 +122,31 @@ def callback():
     update_in_process = True
     str.set(new_status)
     update_in_process = False
-    print(str.get())
+    #print(str.get())
     ketqualongshort = tk.Label(output_frame, text= str.get())
     ketqualongshort.grid(row=2, column=0, padx=5, sticky=tk.E)
     root.after(1000, callback)
     
+
 def calVolume():
     global update_in_process
     if update_in_process: return
     try:
         entry = entry_price.get()
         stoploss = stoploss_price.get()
+        ruiro = RuiRo.get()
+        if (abs(entry-stoploss) != 0):
+            new_volume = ''
+            new_volume = ruiro/abs(entry-stoploss)
+            new_volume = round(new_volume,3)
+            update_in_process = True
+            volume.set(new_volume)
+        else:
+            print('except')
     except ValueError:
         return
-    new_volume = entry + stoploss 
-    update_in_process = True
-    volume.set(new_volume)
+    
     update_in_process = False
-    print(volume.get())
     keyquakhoiluong = tk.Label(output_frame, text=volume.get())
     keyquakhoiluong.grid(row=0, column=1, padx=5, sticky=tk.E)
     root.after(1000, calVolume)
@@ -126,16 +155,13 @@ callback()
 
 calVolume()
 
+
 # ------------ End Update process --------------
 
 #---------------------- OUTPUT--------------------
 
-
-
-
 keyqua = tk.Label(output_frame, text='Khối lượng:')
 keyqua.grid(row=0, column=0, padx=5, sticky=tk.E)
-
 
 Gia_thanh_lylbl = tk.Label(output_frame , text='Giá thanh lý:')
 Gia_thanh_lylbl.grid(row=1, column=0, padx=5, sticky=tk.E)
@@ -143,9 +169,6 @@ Gia_thanh_lylbl.grid(row=1, column=0, padx=5, sticky=tk.E)
 ketquathanhly = tk.Label(output_frame, text='{giathanhly} BUSD'.format(giathanhly =  giathanhly))
 ketquathanhly.grid(row=1, column=1, padx=5, sticky=tk.E)
 
-
-
-
-
+#---------------- End Out put
 
 root.mainloop()
