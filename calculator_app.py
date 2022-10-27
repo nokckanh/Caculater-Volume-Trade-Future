@@ -1,5 +1,5 @@
 import tkinter as tk
-from tkinter import messagebox
+from tkinter import StringVar, messagebox
 from tkinter import ttk
 from decimal import Decimal
 
@@ -9,14 +9,15 @@ futures = { }
 # MAIN WINDOW
 root = tk.Tk()
 root.title("Caculater Volume")
-root.geometry('220x360-40+500')
+root.geometry('220x360-40+400')
 # root.resizable(0, 0) 
 
 # for entry boxes
-num_contracts_var = tk.DoubleVar()     
-entry_price_var = tk.DoubleVar()
-exit_price_var = tk.DoubleVar()
-Gia_thanh_ly = tk.DoubleVar()
+RuiRo = tk.DoubleVar()     
+entry_price = tk.DoubleVar()
+stoploss_price = tk.DoubleVar()
+thanhly_price = tk.DoubleVar()
+donbay = tk.StringVar()
 
 # CREATE FRAMES FOR AREAS OF THE ROOT WINDOW
 # Radio button frame
@@ -37,7 +38,7 @@ output_frame.grid(row=2, column=0, columnspan=3, padx=20, ipadx=5)
 num_contracts_lbl = tk.Label(parm_frame, text='Rủi Ro:')
 num_contracts_lbl.grid(row=0, column=0, padx=5, sticky=tk.E)
 
-entry_price_lbl = tk.Label(parm_frame, text='Entry Price:')
+entry_price_lbl = tk.Label(parm_frame, text='Giá vào lệnh:')
 entry_price_lbl.grid(row=1, column=0, padx=5, sticky=tk.E)
 
 exit_price_lbl = tk.Label(parm_frame, text='Giá cắt lỗ:')
@@ -47,20 +48,17 @@ exit_price_lbl.grid(row=2, column=0, padx=5, sticky=tk.E)
 total_risk_lbl = tk.Label(parm_frame , text='Đòn bẩy:')
 total_risk_lbl.grid(row=3, column=0, padx=5, sticky=tk.E)
 
-Gia_thanh_lylbl = tk.Label(parm_frame , text='Giá thanh lý:')
-Gia_thanh_lylbl.grid(row=4, column=0, padx=5, sticky=tk.E)
 
 # Entry boxes
-num_contracts_box = tk.Entry(parm_frame, textvariable=num_contracts_var, width=11)
+num_contracts_box = tk.Entry(parm_frame, textvariable=RuiRo, width=11)
 num_contracts_box.grid(row=0, column=1, pady=5, sticky=tk.E)
 
-entry_price_box = tk.Entry(parm_frame, textvariable=entry_price_var, width=11)
+entry_price_box = tk.Entry(parm_frame, textvariable=entry_price, width=11)
 entry_price_box.grid(row=1, column=1, pady=5, sticky=tk.E)
 
-exit_price_box = tk.Entry(parm_frame, textvariable=exit_price_var, width=11)
+exit_price_box = tk.Entry(parm_frame, textvariable=stoploss_price, width=11)
 exit_price_box.grid(row=2, column=1, pady=5, sticky=tk.E)
 
-donbay = tk.StringVar()
 
 total_risk_box = ttk.Combobox(parm_frame , width=8,textvariable = donbay)
 total_risk_box['values'] = ('5', 
@@ -73,17 +71,69 @@ total_risk_box['values'] = ('5',
                           '50')
 total_risk_box.grid(row=3, column=1, pady=5, sticky=tk.E)
 
-giathanhly_box = tk.Entry(parm_frame , textvariable=Gia_thanh_ly, width=11)
-giathanhly_box.grid(row=4, column=1, pady=5, sticky=tk.E)
+#------ Kiem tra LONG SHORT ------------
+def CheckLongShort(entry,stoploss):
+    str = 'Bạn đang SHORT'
+    if entry > stoploss:
+        str = 'bạn đang LONG'
+        return str
+    else:
+        return str
+
+#------ END Kiem tra LONG SHORT ------------
+#---------- Update process ---------------
+
+update_in_process = False
+
+str = tk.StringVar()
+
+str.set('First')
+
+def update_c(*args):
+    global update_in_process
+    if update_in_process: return
+    try:
+        entry = entry_price.get()
+        stoploss = stoploss_price.get()
+    except ValueError:
+        return
+    new_status = CheckLongShort(entry,stoploss)
+    
+    update_in_process = True
+    str.set(new_status)
+    update_in_process = False
+
+str.trace("u", update_c)
+print(str)
+# ------------ End Update process --------------
 
 #---------------------- OUTPUT--------------------
+
+volume = 0.001
+giathanhly = 15000
 
 keyqua = tk.Label(output_frame, text='Khối lượng:')
 keyqua.grid(row=0, column=0, padx=5, sticky=tk.E)
 
-#------------ End output--------------
-keyquakhoiluong = tk.Label(output_frame, text='0.001')
+keyquakhoiluong = tk.Label(output_frame, text=volume)
 keyquakhoiluong.grid(row=0, column=1, padx=5, sticky=tk.E)
+
+Gia_thanh_lylbl = tk.Label(output_frame , text='Giá thanh lý:')
+Gia_thanh_lylbl.grid(row=1, column=0, padx=5, sticky=tk.E)
+
+ketquathanhly = tk.Label(output_frame, text='{giathanhly} BUSD'.format(giathanhly =  giathanhly))
+ketquathanhly.grid(row=1, column=1, padx=5, sticky=tk.E)
+
+
+
+
+ketqualongshort = tk.Label(output_frame, text= str.get())
+ketqualongshort.grid(row=2, column=0, padx=5, sticky=tk.E)
+
+#------------ End output--------------
+
+
+
 # create calculate button
 calc_button = tk.Button(root, text='Calculate', )
 calc_button.grid(row=3, column=1, sticky=tk.W, pady=5)
