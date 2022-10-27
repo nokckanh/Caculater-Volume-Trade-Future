@@ -1,3 +1,4 @@
+from msilib.schema import Condition
 import string
 import tkinter as tk
 from tkinter import StringVar, messagebox
@@ -12,7 +13,9 @@ root.geometry('220x360-40+400')
 # root.resizable(0, 0) 
 
 # for entry boxes
-RuiRo = tk.DoubleVar()     
+
+
+RuiRo = tk.DoubleVar()    
 entry_price = tk.DoubleVar()
 stoploss_price = tk.DoubleVar()
 thanhly_price = tk.DoubleVar()
@@ -20,6 +23,21 @@ donbay = tk.StringVar()
 str = tk.StringVar()
 volume = tk.DoubleVar()
 giathanhly = 15000
+
+
+
+
+"""
+def _get():
+    try:
+        entry_price.get()
+        RuiRo.get()
+        stoploss_price.get()
+    except:
+        RuiRo.set(0)
+        entry_price.set(0)
+        stoploss_price.set(0)
+"""
 
 # CREATE FRAMES FOR AREAS OF THE ROOT WINDOW
 # Radio button frame
@@ -54,7 +72,7 @@ total_risk_lbl.grid(row=3, column=0, padx=5, sticky=tk.E)
 import re
 
 def validate(string):
-    regex = re.compile(r"(\+|\-)?[0-9,]*$")
+    regex = re.compile(r"(\+|\-)?[0-9,]*(\.)*[0-9,]*$")
     result = regex.match(string)
     #--- Expect condition
     return (string == ""
@@ -76,12 +94,16 @@ vcmd = (ruiro_box.register(on_validate), '%P')
 ruiro_box.config(validatecommand=vcmd)
 ruiro_box.grid(row=0, column=1, pady=5, sticky=tk.E)
 
-
-entry_price_box = tk.Entry(parm_frame, textvariable=entry_price, width=11)
+entry_price_box = tk.Entry(parm_frame,textvariable=entry_price, width=11, validate="key")
+vcmd = (entry_price_box.register(on_validate), '%P')
+entry_price_box.config(validatecommand=vcmd)
 entry_price_box.grid(row=1, column=1, pady=5, sticky=tk.E)
 
-exit_price_box = tk.Entry(parm_frame, textvariable=stoploss_price, width=11)
+exit_price_box = tk.Entry(parm_frame,textvariable=stoploss_price, width=11, validate="key")
+vcmd = (exit_price_box.register(on_validate), '%P')
+exit_price_box.config(validatecommand=vcmd)
 exit_price_box.grid(row=2, column=1, pady=5, sticky=tk.E)
+
 
 
 total_risk_box = ttk.Combobox(parm_frame , width=8,textvariable = donbay)
@@ -114,47 +136,43 @@ def callback():
     global update_in_process
     if update_in_process: return
     try:
-        entry = entry_price.get()
-        stoploss = stoploss_price.get()
+        entry = float(entry_price.get())
+        stoploss = float(stoploss_price.get())
+        new_status = CheckLongShort(entry,stoploss)
+        update_in_process = True
+        str.set(new_status)
+        update_in_process = False
+        #print(str.get())
+        ketqualongshort = tk.Label(output_frame, text= str.get())
+        ketqualongshort.grid(row=2, column=0, padx=5, sticky=tk.E)
     except ValueError:
         return
-    new_status = CheckLongShort(entry,stoploss)
-    update_in_process = True
-    str.set(new_status)
-    update_in_process = False
-    #print(str.get())
-    ketqualongshort = tk.Label(output_frame, text= str.get())
-    ketqualongshort.grid(row=2, column=0, padx=5, sticky=tk.E)
     root.after(1000, callback)
-    
 
 def calVolume():
     global update_in_process
     if update_in_process: return
     try:
-        entry = entry_price.get()
-        stoploss = stoploss_price.get()
-        ruiro = RuiRo.get()
+        entry = float(entry_price.get())
+        stoploss = float(stoploss_price.get())
+        ruiro = float(RuiRo.get())
         if (abs(entry-stoploss) != 0):
             new_volume = ''
             new_volume = ruiro/abs(entry-stoploss)
             new_volume = round(new_volume,3)
             update_in_process = True
             volume.set(new_volume)
+            update_in_process = False
         else:
             print('except')
     except ValueError:
         return
-    
-    update_in_process = False
     keyquakhoiluong = tk.Label(output_frame, text=volume.get())
     keyquakhoiluong.grid(row=0, column=1, padx=5, sticky=tk.E)
     root.after(1000, calVolume)
-    
+
 callback()
-
 calVolume()
-
 
 # ------------ End Update process --------------
 
