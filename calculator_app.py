@@ -1,10 +1,9 @@
+import string
 import tkinter as tk
 from tkinter import StringVar, messagebox
 from tkinter import ttk
 from decimal import Decimal
 
-# CREATE TICKER SYMBOL DICTIONARY WITH TICK_SIZE AND TICK_VALUE
-futures = { }
 
 # MAIN WINDOW
 root = tk.Tk()
@@ -18,6 +17,9 @@ entry_price = tk.DoubleVar()
 stoploss_price = tk.DoubleVar()
 thanhly_price = tk.DoubleVar()
 donbay = tk.StringVar()
+str = tk.StringVar()
+volume = tk.DoubleVar()
+giathanhly = 15000
 
 # CREATE FRAMES FOR AREAS OF THE ROOT WINDOW
 # Radio button frame
@@ -73,23 +75,20 @@ total_risk_box.grid(row=3, column=1, pady=5, sticky=tk.E)
 
 #------ Kiem tra LONG SHORT ------------
 def CheckLongShort(entry,stoploss):
-    str = 'Bạn đang SHORT'
+    strin = 'Bạn đang SHORT'
     if entry > stoploss:
-        str = 'bạn đang LONG'
-        return str
+        strin = 'bạn đang LONG'
+        return strin
     else:
-        return str
+        return strin
 
 #------ END Kiem tra LONG SHORT ------------
+
 #---------- Update process ---------------
 
 update_in_process = False
 
-str = tk.StringVar()
-
-str.set('First')
-
-def update_c(*args):
+def callback():
     global update_in_process
     if update_in_process: return
     try:
@@ -98,25 +97,45 @@ def update_c(*args):
     except ValueError:
         return
     new_status = CheckLongShort(entry,stoploss)
-    
     update_in_process = True
     str.set(new_status)
     update_in_process = False
+    print(str.get())
+    ketqualongshort = tk.Label(output_frame, text= str.get())
+    ketqualongshort.grid(row=2, column=0, padx=5, sticky=tk.E)
+    root.after(1000, callback)
+    
+def calVolume():
+    global update_in_process
+    if update_in_process: return
+    try:
+        entry = entry_price.get()
+        stoploss = stoploss_price.get()
+    except ValueError:
+        return
+    new_volume = entry + stoploss 
+    update_in_process = True
+    volume.set(new_volume)
+    update_in_process = False
+    print(volume.get())
+    keyquakhoiluong = tk.Label(output_frame, text=volume.get())
+    keyquakhoiluong.grid(row=0, column=1, padx=5, sticky=tk.E)
+    root.after(1000, calVolume)
+    
+callback()
 
-str.trace("u", update_c)
-print(str)
+calVolume()
+
 # ------------ End Update process --------------
 
 #---------------------- OUTPUT--------------------
 
-volume = 0.001
-giathanhly = 15000
+
+
 
 keyqua = tk.Label(output_frame, text='Khối lượng:')
 keyqua.grid(row=0, column=0, padx=5, sticky=tk.E)
 
-keyquakhoiluong = tk.Label(output_frame, text=volume)
-keyquakhoiluong.grid(row=0, column=1, padx=5, sticky=tk.E)
 
 Gia_thanh_lylbl = tk.Label(output_frame , text='Giá thanh lý:')
 Gia_thanh_lylbl.grid(row=1, column=0, padx=5, sticky=tk.E)
@@ -127,21 +146,6 @@ ketquathanhly.grid(row=1, column=1, padx=5, sticky=tk.E)
 
 
 
-ketqualongshort = tk.Label(output_frame, text= str.get())
-ketqualongshort.grid(row=2, column=0, padx=5, sticky=tk.E)
 
-#------------ End output--------------
-
-
-
-# create calculate button
-calc_button = tk.Button(root, text='Calculate', )
-calc_button.grid(row=3, column=1, sticky=tk.W, pady=5)
-
-# CREATE BUTTON TO CLEAR ALL FIELDS
-# function to control the clear button
-# create clear button
-clear_button = tk.Button(root, text='Reset',)
-clear_button.grid(row=3, column=0, sticky=tk.E, pady=5, padx=5)
 
 root.mainloop()
