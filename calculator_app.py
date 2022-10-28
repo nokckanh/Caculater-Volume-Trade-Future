@@ -1,5 +1,6 @@
 from msilib.schema import Condition
 import string
+from tabnanny import check
 import tkinter as tk
 from tkinter import StringVar, messagebox
 from tkinter import ttk
@@ -24,20 +25,6 @@ str = tk.StringVar()
 volume = tk.DoubleVar()
 giathanhly = 15000
 
-
-
-
-"""
-def _get():
-    try:
-        entry_price.get()
-        RuiRo.get()
-        stoploss_price.get()
-    except:
-        RuiRo.set(0)
-        entry_price.set(0)
-        stoploss_price.set(0)
-"""
 
 # CREATE FRAMES FOR AREAS OF THE ROOT WINDOW
 # Radio button frame
@@ -86,7 +73,7 @@ def on_validate(P):
     return validate(P)    
     
 #-------------------End -------------------
-
+ 
 
 # Entry boxes
 ruiro_box = tk.Entry(parm_frame,textvariable=RuiRo, width=11, validate="key")
@@ -143,10 +130,10 @@ def callback():
         str.set(new_status)
         update_in_process = False
         #print(str.get())
-        ketqualongshort = tk.Label(output_frame, text= str.get())
-        ketqualongshort.grid(row=2, column=0, padx=5, sticky=tk.E)
     except ValueError:
         return
+    ketqualongshort = tk.Label(output_frame, text= str.get())
+    ketqualongshort.grid(row=2, column=0, padx=5, sticky=tk.E)
     root.after(1000, callback)
 
 def calVolume():
@@ -171,6 +158,7 @@ def calVolume():
     keyquakhoiluong.grid(row=0, column=1, padx=5, sticky=tk.E)
     root.after(1000, calVolume)
 
+## =>> them try catch ham get init.py catch error float number ""
 callback()
 calVolume()
 
